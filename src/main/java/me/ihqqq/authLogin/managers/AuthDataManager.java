@@ -48,7 +48,6 @@ public class AuthDataManager {
     }
 
     public void save() {
-        // Chụp lại file/config reference để dùng trong lambda (effectively final)
         final File   target = dataFile;
         final String yaml   = dataConfig.saveToString();
 

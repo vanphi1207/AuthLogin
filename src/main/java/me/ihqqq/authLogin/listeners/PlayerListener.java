@@ -274,8 +274,4 @@ public class PlayerListener implements Listener {
         if (task != null) task.cancel();
     }
 
-    public static String colorize(String msg) {
-        if (msg == null) return "";
-        return msg.replace("&", "§");
-    }
 }

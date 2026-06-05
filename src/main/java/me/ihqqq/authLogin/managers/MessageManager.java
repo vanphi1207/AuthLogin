@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static me.ihqqq.authLogin.listeners.PlayerListener.colorize;
+import static me.ihqqq.authLogin.utils.ColorUtil.colorize;
 
 public class MessageManager {
 
