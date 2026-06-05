@@ -1,0 +1,40 @@
+# Thời gian (giây) người chơi phải đăng nhập sau khi join
+# Nếu quá thời gian sẽ bị kick
+login-timeout: 60
+
+# Số lần nhập sai tối đa trước khi bị kick
+max-attempts: 5
+
+# Tên server hiển thị trong Google Authenticator
+server-name: "TenServer"
+
+# Cấu hình âm thanh
+# Danh sách sound: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
+sounds:
+  # Âm thanh khi đăng nhập thành công
+  login-success:
+    enabled: true
+    sound: "ENTITY_PLAYER_LEVELUP"
+    volume: 1.0
+    pitch: 1.0
+
+  # Âm thanh khi nhập sai mã
+  login-fail:
+    enabled: true
+    sound: "ENTITY_VILLAGER_NO"
+    volume: 1.0
+    pitch: 1.0
+
+  # Âm thanh khi thiết lập 2FA thành công
+  setup-success:
+    enabled: true
+    sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+    volume: 1.0
+    pitch: 1.2
+
+  # Âm thanh tick mỗi giây trong countdown đăng nhập
+  countdown-tick:
+    enabled: true
+    sound: "BLOCK_NOTE_BLOCK_HAT"
+    volume: 0.5
+    pitch: 1.0

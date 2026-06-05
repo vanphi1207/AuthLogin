@@ -1,0 +1,30 @@
+name: AuthLogin
+version: '${version}'
+main: me.ihqqq.authLogin.AuthLogin
+api-version: '1.20'
+authors: [ ihqqq ]
+
+commands:
+  login:
+    description: Đăng nhập bằng mã TOTP
+    usage: /login <mã-6-số>
+    aliases: [l]
+  2fasetup:
+    description: Thiết lập Google Authenticator
+    usage: /2fasetup
+    aliases: [setup2fa]
+  2fadisable:
+    description: Tắt xác thực 2 bước (cần nhập mã TOTP)
+    usage: /2fadisable <mã-6-số>
+  setauthspawn:
+    description: Đặt vị trí spawn chờ khi người chơi chưa đăng nhập
+    usage: /setauthspawn
+    permission: totpauth.setspawn
+
+permissions:
+  totpauth.bypass:
+    description: Bỏ qua yêu cầu đăng nhập (dành cho admin)
+    default: false
+  totpauth.setspawn:
+    description: Thiết lập vị trí auth spawn
+    default: op

@@ -1,0 +1,50 @@
+# Chỉnh sửa tất cả thông báo của plugin tại đây
+
+messages:
+  # Chung
+  players-only: "&8[&c⚙&8] &fLệnh này chỉ dành cho người chơi."
+  invalid-code-format: "&8[&c⚙&8] &fMã phải là 6 chữ số."
+  no-permission: "&8[&c⚙&8] &fBạn không có quyền thực hiện lệnh này."
+
+  # Đăng nhập
+  join-prompt: "&8[&e⚠&8] &fVui lòng đăng nhập: &a/login <mã-6-số>"
+  setup-prompt: "&8[&e⚠&8] &fBạn chưa thiết lập 2FA. Dùng &a/2fasetup &fđể bắt đầu."
+  login-success: "&8[&a✓&8] &fĐăng nhập thành công!"
+  login-fail: "&8[&c✗&8] &fMã không đúng! Còn &c%attempts% &flần thử."
+  login-timeout: "&8[&c⏰&8] &fHết thời gian đăng nhập!"
+  too-many-attempts: "&8[&c✗&8] &fQuá nhiều lần thử sai. Bị kick!"
+  already-logged-in: "&8[&e⚠&8] &fBạn đã đăng nhập rồi."
+  must-login-first: "&8[&c⚙&8] &fHãy đăng nhập trước: &a/login <mã>"
+  must-login-to-disable: "&8[&c⚙&8] &fBạn cần đăng nhập trước."
+
+  # Spawn
+  setspawn-success: "&8[&a✓&8] &fĐã đặt vị trí Auth Spawn tại vị trí hiện tại của bạn."
+
+  # Cài đặt 2FA
+  # %secret% = secret key để nhập thủ công vào app authenticator hoặc authy
+  setup-guide:
+    - "&8[&6Thiết lập Google Authenticator&8]"
+    - "&71. &fMở app &aGoogle Authenticator &fhoặc &aAuthy"
+    - "&72. &fNhấn &a+ &fvà chọn &aQuét QR code"
+    - "&73. &fCầm map trên tay và &aquét QR code &fhiển thị trên bản đồ"
+    - "&fSecret key (nhập thủ công nếu cần): &e%secret%"
+    - "&74. &fSau khi quét xong, xác nhận bằng:"
+    - "&a/2fasetup <mã-6-số-trong-app>"
+
+  setup-success: "&8[&a✓&8] &fThiết lập 2FA thành công!"
+  setup-auto-login: "&8[&a✓&8] &fBạn đã được đăng nhập tự động."
+  setup-no-pending: "&8[&c⚙&8] &fHãy chạy &a/2fasetup &ftrước để lấy QR code."
+  setup-wrong-code: "&8[&c⚙&8] &fMã không đúng! Thử lại: &a/2fasetup <mã>"
+  setup-usage: "&8[&c⚙&8] &fCú pháp: &a/2fasetup <mã-6-số>"
+  setup-qr-map-name: "&6[Auth] &eQR Code 2FA"
+  setup-no-drop-qr: "&8[&c⚙&8] &fKhông thể bỏ QR map! Hãy xác nhận bằng: &a/2fasetup <mã>"
+
+  # Tắt 2FA
+  disable-success: "&8[&a✓&8] &f2FA đã được tắt."
+  disable-no-longer-needed: "&e[Auth] &fBạn sẽ không cần đăng nhập bằng mã nữa."
+  disable-wrong-code: "&8[&c⚙&8] &fMã không đúng! 2FA vẫn đang bật."
+  disable-usage: "&8[&c⚙&8] &fCú pháp: &a/2fadisable <mã-6-số>"
+  not-setup: "&8[&c✗&8] &fBạn chưa thiết lập 2FA."
+
+  # Countdown actionbar — %time% = thời gian còn lại, %bar% = thanh tiến trình
+  countdown-actionbar: "&fĐăng nhập trong: &l%time% &8[%bar%&8]"
