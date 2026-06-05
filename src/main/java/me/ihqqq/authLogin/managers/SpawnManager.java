@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.UUID;
 
 public class SpawnManager {
@@ -17,7 +19,7 @@ public class SpawnManager {
     private YamlConfiguration spawnConfig;
 
     public SpawnManager(JavaPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin    = plugin;
         this.spawnFile = new File(plugin.getDataFolder(), "spawn.yml");
         reload();
     }
@@ -34,15 +36,28 @@ public class SpawnManager {
         spawnConfig = YamlConfiguration.loadConfiguration(spawnFile);
     }
 
+
     private void save() {
+        final File   target = spawnFile;
+        final String yaml   = spawnConfig.saveToString();
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                Files.writeString(target.toPath(), yaml, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                plugin.getLogger().severe("Không thể lưu spawn.yml: " + e.getMessage());
+            }
+        });
+    }
+
+    public void saveSync() {
         try {
             spawnConfig.save(spawnFile);
         } catch (IOException e) {
-            plugin.getLogger().severe("Không thể lưu spawn.yml: " + e.getMessage());
+            plugin.getLogger().severe("Không thể lưu spawn.yml (sync): " + e.getMessage());
         }
     }
 
-    // ── Auth Spawn ────────────────────────────────────────────────────────────
 
     public boolean hasAuthSpawn() {
         return spawnConfig.contains("auth-spawn.world");
@@ -50,9 +65,9 @@ public class SpawnManager {
 
     public void setAuthSpawn(Location loc) {
         spawnConfig.set("auth-spawn.world", loc.getWorld().getName());
-        spawnConfig.set("auth-spawn.x", loc.getX());
-        spawnConfig.set("auth-spawn.y", loc.getY());
-        spawnConfig.set("auth-spawn.z", loc.getZ());
+        spawnConfig.set("auth-spawn.x",     loc.getX());
+        spawnConfig.set("auth-spawn.y",     loc.getY());
+        spawnConfig.set("auth-spawn.z",     loc.getZ());
         spawnConfig.set("auth-spawn.yaw",   (double) loc.getYaw());
         spawnConfig.set("auth-spawn.pitch", (double) loc.getPitch());
         save();
@@ -71,14 +86,14 @@ public class SpawnManager {
         return new Location(world, x, y, z, yaw, pitch);
     }
 
-    // ── Last Location ─────────────────────────────────────────────────────────
+
 
     public void saveLastLocation(UUID uuid, Location loc) {
         String path = "last-location." + uuid;
         spawnConfig.set(path + ".world", loc.getWorld().getName());
-        spawnConfig.set(path + ".x", loc.getX());
-        spawnConfig.set(path + ".y", loc.getY());
-        spawnConfig.set(path + ".z", loc.getZ());
+        spawnConfig.set(path + ".x",     loc.getX());
+        spawnConfig.set(path + ".y",     loc.getY());
+        spawnConfig.set(path + ".z",     loc.getZ());
         spawnConfig.set(path + ".yaw",   (double) loc.getYaw());
         spawnConfig.set(path + ".pitch", (double) loc.getPitch());
         save();
@@ -89,7 +104,7 @@ public class SpawnManager {
     }
 
     public Location getLastLocation(UUID uuid) {
-        String path = "last-location." + uuid;
+        String path      = "last-location." + uuid;
         String worldName = spawnConfig.getString(path + ".world");
         if (worldName == null) return null;
         World world = Bukkit.getWorld(worldName);

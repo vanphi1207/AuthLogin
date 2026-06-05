@@ -10,18 +10,17 @@ import java.util.Map;
 import java.util.UUID;
 
 public class AuthDataManager {
+
     private final JavaPlugin plugin;
     private final File dataFile;
     private YamlConfiguration dataConfig;
 
-    private final Map<UUID, String> secretCache = new HashMap<>();
-
-    private final Map<UUID, Boolean> loggedIn = new HashMap<>();
-
+    private final Map<UUID, String>  secretCache  = new HashMap<>();
+    private final Map<UUID, Boolean> loggedIn     = new HashMap<>();
     private final Map<UUID, Integer> failAttempts = new HashMap<>();
 
     public AuthDataManager(JavaPlugin plugin) {
-        this.plugin = plugin;
+        this.plugin   = plugin;
         this.dataFile = new File(plugin.getDataFolder(), "players.yml");
         reload();
     }
@@ -49,10 +48,25 @@ public class AuthDataManager {
     }
 
     public void save() {
+        // Chụp lại file/config reference để dùng trong lambda (effectively final)
+        final File   target = dataFile;
+        final String yaml   = dataConfig.saveToString();
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                java.nio.file.Files.writeString(target.toPath(), yaml,
+                        java.nio.charset.StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                plugin.getLogger().severe("Không thể lưu players.yml: " + e.getMessage());
+            }
+        });
+    }
+
+    public void saveSync() {
         try {
             dataConfig.save(dataFile);
         } catch (IOException e) {
-            plugin.getLogger().severe("Không thể lưu players.yml: " + e.getMessage());
+            plugin.getLogger().severe("Không thể lưu players.yml (sync): " + e.getMessage());
         }
     }
 
@@ -90,6 +104,7 @@ public class AuthDataManager {
         loggedIn.remove(uuid);
         failAttempts.remove(uuid);
     }
+
 
 
     public int getFailAttempts(UUID uuid) {

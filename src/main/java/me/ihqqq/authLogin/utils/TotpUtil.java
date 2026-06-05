@@ -11,9 +11,9 @@ import java.security.SecureRandom;
 
 public class TotpUtil {
 
-    private static int TIME_STEP = 30; // 30 giây reset mã 1 lần
-    private static final int CODE_DIGITS = 6; // 6 chữ số mã xác thực
-    private static final int WINDOW = 1;
+    private static final int TIME_STEP   = 30;
+    private static final int CODE_DIGITS = 6;
+    private static final int WINDOW      = 1;
 
     public static String generateSecret() {
         SecureRandom random = new SecureRandom();
@@ -59,7 +59,7 @@ public class TotpUtil {
     }
 
     public static String buildOtpAuthUri(String secret, String playerName, String issuer) {
-        String encodedName = playerName.replace(" ", "%20");
+        String encodedName   = playerName.replace(" ", "%20");
         String encodedIssuer = issuer.replace(" ", "%20");
         return String.format(
                 "otpauth://totp/%s:%s?secret=%s&issuer=%s&algorithm=SHA1&digits=%d&period=%d",
