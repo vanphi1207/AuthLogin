@@ -1,5 +1,6 @@
 package me.ihqqq.authLogin.listeners;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import me.ihqqq.authLogin.commands.SetupCommand;
 import me.ihqqq.authLogin.managers.AuthDataManager;
 import me.ihqqq.authLogin.managers.MessageManager;
@@ -115,7 +116,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         if (!authData.isLoggedIn(event.getPlayer().getUniqueId())) {
             event.setCancelled(true);
         }

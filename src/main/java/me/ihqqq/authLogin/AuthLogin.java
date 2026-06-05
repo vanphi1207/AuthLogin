@@ -11,7 +11,8 @@ import me.ihqqq.authLogin.managers.SoundManager;
 import me.ihqqq.authLogin.managers.SpawnManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import static me.ihqqq.authLogin.listeners.PlayerListener.colorize;
+import static me.ihqqq.authLogin.utils.ColorUtil.colorize;
+
 
 public final class AuthLogin extends JavaPlugin {
 
@@ -60,7 +61,7 @@ public final class AuthLogin extends JavaPlugin {
     @Override
     public void onDisable() {
         if (authDataManager != null) {
-            authDataManager.save();
+            authDataManager.saveSync();
         }
 
         log("&f--------------------------------");
