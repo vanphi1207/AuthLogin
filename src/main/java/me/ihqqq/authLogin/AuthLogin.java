@@ -9,10 +9,10 @@ import me.ihqqq.authLogin.managers.AuthDataManager;
 import me.ihqqq.authLogin.managers.MessageManager;
 import me.ihqqq.authLogin.managers.SoundManager;
 import me.ihqqq.authLogin.managers.SpawnManager;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import static me.ihqqq.authLogin.utils.ColorUtil.colorize;
-
 
 public final class AuthLogin extends JavaPlugin {
 
@@ -60,8 +60,19 @@ public final class AuthLogin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (spawnManager != null && authDataManager != null) {
+            for (Player player : getServer().getOnlinePlayers()) {
+                if (authDataManager.isLoggedIn(player.getUniqueId())) {
+                    spawnManager.saveLastLocationInMemory(player.getUniqueId(), player.getLocation());
+                }
+            }
+        }
+
         if (authDataManager != null) {
             authDataManager.saveSync();
+        }
+        if (spawnManager != null) {
+            spawnManager.saveSync();
         }
 
         log("&f--------------------------------");

@@ -36,7 +36,6 @@ public class SpawnManager {
         spawnConfig = YamlConfiguration.loadConfiguration(spawnFile);
     }
 
-
     private void save() {
         final File   target = spawnFile;
         final String yaml   = spawnConfig.saveToString();
@@ -86,9 +85,17 @@ public class SpawnManager {
         return new Location(world, x, y, z, yaw, pitch);
     }
 
-
-
     public void saveLastLocation(UUID uuid, Location loc) {
+        writeLocationToConfig(uuid, loc);
+        save();
+    }
+
+
+    public void saveLastLocationInMemory(UUID uuid, Location loc) {
+        writeLocationToConfig(uuid, loc);
+    }
+
+    private void writeLocationToConfig(UUID uuid, Location loc) {
         String path = "last-location." + uuid;
         spawnConfig.set(path + ".world", loc.getWorld().getName());
         spawnConfig.set(path + ".x",     loc.getX());
@@ -96,7 +103,6 @@ public class SpawnManager {
         spawnConfig.set(path + ".z",     loc.getZ());
         spawnConfig.set(path + ".yaw",   (double) loc.getYaw());
         spawnConfig.set(path + ".pitch", (double) loc.getPitch());
-        save();
     }
 
     public boolean hasLastLocation(UUID uuid) {
