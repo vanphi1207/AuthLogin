@@ -1,10 +1,13 @@
 package me.ihqqq.authLogin.managers;
 
+import me.ihqqq.authLogin.utils.SecretEncryptor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,11 +22,55 @@ public class AuthDataManager {
     private final Map<UUID, Boolean> loggedIn     = new HashMap<>();
     private final Map<UUID, Integer> failAttempts = new HashMap<>();
 
+    private final SecretEncryptor encryptor;
+
     public AuthDataManager(JavaPlugin plugin) {
-        this.plugin   = plugin;
-        this.dataFile = new File(plugin.getDataFolder(), "players.yml");
+        this.plugin    = plugin;
+        this.dataFile  = new File(plugin.getDataFolder(), "players.yml");
+        this.encryptor = loadOrCreateEncryptor();
         reload();
     }
+
+
+    private SecretEncryptor loadOrCreateEncryptor() {
+        File keyFile = new File(plugin.getDataFolder(), "server.key");
+        plugin.getDataFolder().mkdirs();
+
+        if (!keyFile.exists()) {
+            byte[] key = SecretEncryptor.generateKey();
+            try {
+                Files.write(keyFile.toPath(), key);
+                setFilePermissionsRestricted(keyFile);
+                plugin.getLogger().info("Đã tạo server.key mới. " +
+                        "BACKUP file này lại — mất key sẽ mất toàn bộ dữ liệu 2FA!");
+            } catch (IOException e) {
+                throw new RuntimeException("Không thể ghi server.key: " + e.getMessage(), e);
+            }
+            return new SecretEncryptor(key);
+        }
+
+        try {
+            byte[] key = Files.readAllBytes(keyFile.toPath());
+            if (key.length != 32) {
+                throw new RuntimeException(
+                        "server.key hỏng — Xóa file để tạo key mới (sẽ mất dữ liệu 2FA cũ).");
+            }
+            return new SecretEncryptor(key);
+        } catch (IOException e) {
+            throw new RuntimeException("Không thể đọc server.key: " + e.getMessage(), e);
+        }
+    }
+
+    private void setFilePermissionsRestricted(File file) {
+        try {
+            file.setReadable(false, false);
+            file.setReadable(true,  true);
+            file.setWritable(false, false);
+            file.setWritable(true,  true);
+        } catch (Exception ignored) {}
+    }
+
+
 
     public void reload() {
         if (!dataFile.exists()) {
@@ -37,13 +84,35 @@ public class AuthDataManager {
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
 
         secretCache.clear();
+        boolean needsMigration = false;
+
         if (dataConfig.contains("players")) {
             for (String uuidStr : dataConfig.getConfigurationSection("players").getKeys(false)) {
-                String secret = dataConfig.getString("players." + uuidStr + ".secret");
-                if (secret != null && !secret.isEmpty()) {
-                    secretCache.put(UUID.fromString(uuidStr), secret);
+                String stored = dataConfig.getString("players." + uuidStr + ".secret");
+                if (stored == null || stored.isEmpty()) continue;
+
+                UUID uuid = UUID.fromString(uuidStr);
+
+                if (SecretEncryptor.isEncrypted(stored)) {
+                    try {
+                        secretCache.put(uuid, encryptor.decrypt(stored));
+                    } catch (Exception e) {
+                        plugin.getLogger().severe(
+                                "Không thể decrypt secret của " + uuidStr +
+                                        ": " + e.getMessage() + " — bỏ qua player này.");
+                    }
+                } else {
+                    plugin.getLogger().info("Migrating secret của " + uuidStr + " sang dạng mã hóa.");
+                    secretCache.put(uuid, stored);
+                    dataConfig.set("players." + uuidStr + ".secret", encryptor.encrypt(stored));
+                    needsMigration = true;
                 }
             }
+        }
+
+        if (needsMigration) {
+            save();
+            plugin.getLogger().info("Migration hoàn tất — tất cả secret đã được mã hóa.");
         }
     }
 
@@ -53,8 +122,7 @@ public class AuthDataManager {
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
-                java.nio.file.Files.writeString(target.toPath(), yaml,
-                        java.nio.charset.StandardCharsets.UTF_8);
+                Files.writeString(target.toPath(), yaml, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 plugin.getLogger().severe("Không thể lưu players.yml: " + e.getMessage());
             }
@@ -70,6 +138,7 @@ public class AuthDataManager {
     }
 
 
+
     public boolean hasSecret(UUID uuid) {
         return secretCache.containsKey(uuid);
     }
@@ -78,9 +147,9 @@ public class AuthDataManager {
         return secretCache.get(uuid);
     }
 
-    public void setSecret(UUID uuid, String secret) {
-        secretCache.put(uuid, secret);
-        dataConfig.set("players." + uuid + ".secret", secret);
+    public void setSecret(UUID uuid, String plaintextSecret) {
+        secretCache.put(uuid, plaintextSecret);
+        dataConfig.set("players." + uuid + ".secret", encryptor.encrypt(plaintextSecret));
         save();
     }
 
@@ -89,6 +158,7 @@ public class AuthDataManager {
         dataConfig.set("players." + uuid + ".secret", null);
         save();
     }
+
 
 
     public boolean isLoggedIn(UUID uuid) {

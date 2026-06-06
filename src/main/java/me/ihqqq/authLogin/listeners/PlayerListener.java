@@ -51,7 +51,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        if (player.isPermissionSet("totpauth.bypass") && player.hasPermission("totpauth.bypass")) {
+        if (player.hasPermission("totpauth.bypass")) {
             authData.setLoggedIn(uuid, true);
             return;
         }
@@ -59,6 +59,8 @@ public class PlayerListener implements Listener {
         authData.setLoggedIn(uuid, false);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if(!player.isOnline()) return;
+
             for (Player other : plugin.getServer().getOnlinePlayers()) {
                 if (!other.equals(player)) {
                     other.hidePlayer(plugin, player);
@@ -87,6 +89,8 @@ public class PlayerListener implements Listener {
         if (authData.isLoggedIn(uuid)) {
             spawnManager.saveLastLocation(uuid, player.getLocation());
         }
+
+        setupCommand.cleanupPendingQr(uuid, player);
 
         cancelTimeout(uuid);
         authData.clearSession(uuid);

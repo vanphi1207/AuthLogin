@@ -38,3 +38,9 @@ replay_pid*
 
 # Compiled class files
 *.class
+
+plugins/AuthLogin/server.key
+server.key
+*.key
+
+plugins/AuthLogin/players.yml

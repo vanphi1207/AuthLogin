@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class SetupCommand implements CommandExecutor {
+
     private final JavaPlugin plugin;
     private final AuthDataManager authData;
     private final MessageManager messages;
@@ -34,6 +35,7 @@ public class SetupCommand implements CommandExecutor {
         this.messages = messages;
     }
 
+
     public boolean isPendingQrMap(UUID uuid, ItemStack item) {
         if (item == null || item.getType() != Material.FILLED_MAP) return false;
         Integer mapId = pendingMapIds.get(uuid);
@@ -42,6 +44,23 @@ public class SetupCommand implements CommandExecutor {
         MapView view = mapMeta.getMapView();
         return view != null && view.getId() == mapId;
     }
+
+    public void cleanupPendingQr(UUID uuid, Player player) {
+        pendingSecrets.remove(uuid);
+        Integer mapId = pendingMapIds.remove(uuid);
+        if (mapId == null) return;
+
+        try {
+            @SuppressWarnings("deprecation")
+            MapView view = Bukkit.getMap(mapId);
+            if (view != null) {
+                view.getRenderers().forEach(view::removeRenderer);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
@@ -86,11 +105,10 @@ public class SetupCommand implements CommandExecutor {
         // /2fasetup — tạo QR mới
         if (pendingMapIds.containsKey(uuid)) {
             removeQrMap(player, pendingMapIds.remove(uuid));
+            pendingSecrets.remove(uuid);
         }
 
-        String secret = TotpUtil.generateSecret();
-        pendingSecrets.put(uuid, secret);
-
+        String secret     = TotpUtil.generateSecret();
         String serverName = plugin.getConfig().getString("server-name", "MinecraftServer");
         String otpUri     = TotpUtil.buildOtpAuthUri(secret, player.getName(), serverName);
 
@@ -100,6 +118,7 @@ public class SetupCommand implements CommandExecutor {
         mapView.setLocked(true);
         mapView.setTrackingPosition(false);
 
+        pendingSecrets.put(uuid, secret);
         pendingMapIds.put(uuid, mapView.getId());
 
         ItemStack mapItem = new ItemStack(Material.FILLED_MAP);
@@ -119,6 +138,8 @@ public class SetupCommand implements CommandExecutor {
         return true;
     }
 
+
+
     private void removeQrMap(Player player, Integer mapId) {
         if (mapId == null) return;
         ItemStack[] contents = player.getInventory().getContents();
@@ -134,9 +155,17 @@ public class SetupCommand implements CommandExecutor {
         ItemStack offHand = player.getInventory().getItemInOffHand();
         if (offHand.getType() == Material.FILLED_MAP
                 && offHand.getItemMeta() instanceof MapMeta mm
-                && mm.getMapView() != null && mm.getMapView().getId() == mapId) {
+                && mm.getMapView() != null
+                && mm.getMapView().getId() == mapId) {
             player.getInventory().setItemInOffHand(null);
         }
+        try {
+            @SuppressWarnings("deprecation")
+            MapView view = Bukkit.getMap(mapId);
+            if (view != null) {
+                view.getRenderers().forEach(view::removeRenderer);
+            }
+        } catch (Exception ignored) {}
     }
 
     private void removeAllMaps(Player player) {
